@@ -19,22 +19,39 @@ export class CadastroEdicaoUsuariosComponent {
     idade: new FormControl(),
   });
 
+  id: number = 0;
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
-    // CHAMAR A API BUSCANDO O DADO DO USUARIO PELO ID
-    // APOS CHAMAR API, PREENCHER DADOS NO FORMULARIO (FORMGROUP)
+    try {
+      const idNumber = Number(id);
+      if (idNumber) {
+        this.id = idNumber;
+        this.usuariosService.buscarUsuarioPorId(idNumber).subscribe(usuario => {
+          this.usuarioForm.patchValue({
+            nome: usuario.nome,
+            idade: usuario.idade
+          })
+        })
+      }
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  cadastrarUsuarios() {
+  cadastrarEditarUsuarios() {
     const usuario: IUsuario = this.usuarioForm.value as IUsuario;
-
     usuario.ativo = true;
 
-    this.usuariosService.cadastrarUsuario(usuario).subscribe(
+    if (this.id) {
+      usuario.id = this.id;
+    }
+
+    this.usuariosService.cadastrarEditarUsuario(usuario).subscribe(
       (result) => {
         Swal.fire({
           title: "PARABÉNS",
-          text: "Usuário cadastrado com sucesso!",
+          text: `Usuário ${this.id ? 'editado': 'cadastrado'} com sucesso!`,
           icon: "success"
         });
         this.router.navigateByUrl('/usuarios');
